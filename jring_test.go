@@ -17,7 +17,15 @@ func Test_node_GetAddr(t *testing.T) {
 		fields fields
 		want   string
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
+		{
+			name: "testGetHost",
+			fields: fields{
+				addr:   "localhost:7788",
+				weight: 7,
+			},
+			want: "localhost:7788",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -44,7 +52,15 @@ func Test_node_GetWeight(t *testing.T) {
 		fields fields
 		want   int
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
+		{
+			name: "testGetWeight",
+			fields: fields{
+				addr:   "localhost:7788",
+				weight: 7,
+			},
+			want: 7,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -71,7 +87,16 @@ func Test_node_GetHash(t *testing.T) {
 		fields fields
 		want   uint64
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
+		{
+			name: "testGetHash",
+			fields: fields{
+				addr:   "localhost:7788",
+				weight: 7,
+				hash:   2342343243,
+			},
+			want: 2342343243,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -102,7 +127,31 @@ func Test_node_Eq(t *testing.T) {
 		args   args
 		want   bool
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
+		{
+			name: "testNodeEqFalse",
+			fields: fields{
+				addr:   "localhost:7788",
+				weight: 7,
+				hash:   2342343243,
+			},
+			args: args{
+				naddr: "localhost:7788 ",
+			},
+			want: false,
+		},
+		{
+			name: "testNodeEq",
+			fields: fields{
+				addr:   "localhost:7788",
+				weight: 7,
+				hash:   2342343243,
+			},
+			args: args{
+				naddr: "localhost:7788",
+			},
+			want: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -128,7 +177,18 @@ func TestNewNode(t *testing.T) {
 		args args
 		want Node
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
+		{
+			name: "testNewNode",
+			args: args{
+				addr:   "localhost:7788",
+				weight: 7,
+			},
+			want: node{
+				addr:   "localhost:7788",
+				weight: 7,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -145,7 +205,20 @@ func Test_nodeList_Len(t *testing.T) {
 		h    nodeList
 		want int
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
+		{
+			name: "nodeListLen0",
+			h:    []node{},
+			want: 0,
+		},
+		{
+			name: "nodeListLen1",
+			h: []node{node{
+				addr:   "test.com",
+				weight: 7,
+			}},
+			want: 1,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
