@@ -305,11 +305,11 @@ func Test_nodeList_Swap(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.h.Less(tt.args.i, tt.args.j); got != tt.before {
-				t.Errorf("nodeList.Less() = %v, want %v", got, tt.before)
+				t.Errorf("before swap nodeList.Less() = %v, want %v", got, tt.before)
 			}
 			tt.h.Swap(tt.args.i, tt.args.j)
 			if got := tt.h.Less(tt.args.i, tt.args.j); got != tt.after {
-				t.Errorf("nodeList.Less() = %v, want %v", got, tt.after)
+				t.Errorf("after swap nodeList.Less() = %v, want %v", got, tt.after)
 			}
 		})
 	}
@@ -329,7 +329,7 @@ func Test_nodeList_sort(t *testing.T) {
 	}{
 		// TODO: Add test cases.
 		{
-			name: "testNodeListSwap",
+			name: "testNodeListsort",
 			h: nodeList{
 				node{
 					addr: "node2",
@@ -351,11 +351,11 @@ func Test_nodeList_sort(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.h.Less(tt.args.i, tt.args.j); got != tt.before {
-				t.Errorf("nodeList.Less() = %v, want %v", got, tt.before)
+				t.Errorf("befor sort nodeList.Less() = %v, want %v", got, tt.before)
 			}
 			tt.h.sort()
 			if got := tt.h.Less(tt.args.i, tt.args.j); got != tt.after {
-
+				t.Errorf("after sort nodeList.Less() = %v, want %v", got, tt.after)
 			}
 		})
 	}
@@ -372,11 +372,26 @@ func Test_hashJRing_Add(t *testing.T) {
 		weight int
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
+		name        string
+		fields      fields
+		args        args
+		nodeswant   int
+		memberswant int
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
+		{
+			name: "zeroadd",
+			fields: fields{
+				nodes:   nodeList{},
+				members: make(map[string]Node, 0),
+			},
+			args: args{
+				addr:   "test1",
+				weight: 2,
+			},
+			nodeswant:   2,
+			memberswant: 1,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -386,6 +401,12 @@ func Test_hashJRing_Add(t *testing.T) {
 				RWMutex: tt.fields.RWMutex,
 			}
 			h.Add(tt.args.addr, tt.args.weight)
+			if got := len(h.nodes); got != tt.nodeswant {
+				t.Errorf("after add len(h.nodes) = %v, want %v", got, tt.nodeswant)
+			}
+			if got := len(h.members); got != tt.memberswant {
+				t.Errorf("after add len(h.members) = %v, want %v", got, tt.memberswant)
+			}
 		})
 	}
 }
@@ -400,11 +421,49 @@ func Test_hashJRing_Remove(t *testing.T) {
 		addr string
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
+		name        string
+		fields      fields
+		args        args
+		nodeswant   int
+		memberswant int
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
+		{
+			name: "zeroremove",
+			fields: fields{
+				nodes:   nodeList{},
+				members: make(map[string]Node, 0),
+			},
+			args: args{
+				addr: "test1",
+			},
+			nodeswant:   0,
+			memberswant: 0,
+		},
+		{
+			name: "one remove",
+			fields: fields{
+				nodes:   nodeList{node{addr: "test1", hash: 1, weight: 2}, node{addr: "test1", hash: 2, weight: 2}},
+				members: map[string]Node{"test1": node{addr: "test1"}},
+			},
+			args: args{
+				addr: "test1",
+			},
+			nodeswant:   0,
+			memberswant: 0,
+		},
+		{
+			name: "one remove",
+			fields: fields{
+				nodes:   nodeList{node{addr: "test1", hash: 1, weight: 2}, node{addr: "test1", hash: 2, weight: 2}},
+				members: map[string]Node{"test1": node{addr: "test1", weight: 2}},
+			},
+			args: args{
+				addr: "test2",
+			},
+			nodeswant:   2,
+			memberswant: 1,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -414,6 +473,12 @@ func Test_hashJRing_Remove(t *testing.T) {
 				RWMutex: tt.fields.RWMutex,
 			}
 			h.Remove(tt.args.addr)
+			if got := len(h.nodes); got != tt.nodeswant {
+				t.Errorf("after remove len(h.nodes) = %v, want %v", got, tt.nodeswant)
+			}
+			if got := len(h.members); got != tt.memberswant {
+				t.Errorf("after remove len(h.members) = %v, want %v", got, tt.memberswant)
+			}
 		})
 	}
 }
@@ -428,11 +493,25 @@ func Test_hashJRing_Set(t *testing.T) {
 		addrs map[string]int
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
+		name        string
+		fields      fields
+		args        args
+		nodeswant   int
+		memberswant int
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
+		{
+			name: "zeroadd",
+			fields: fields{
+				nodes:   nodeList{},
+				members: make(map[string]Node, 0),
+			},
+			args: args{
+				addrs: map[string]int{"test1": 2, "test2": 3},
+			},
+			nodeswant:   5,
+			memberswant: 2,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -442,130 +521,11 @@ func Test_hashJRing_Set(t *testing.T) {
 				RWMutex: tt.fields.RWMutex,
 			}
 			h.Set(tt.args.addrs)
-		})
-	}
-}
-
-func Test_hashJRing_Hash(t *testing.T) {
-	type fields struct {
-		nodes   nodeList
-		members map[string]Node
-		RWMutex sync.RWMutex
-	}
-	type args struct {
-		key string
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   uint64
-	}{
-	// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := &hashJRing{
-				nodes:   tt.fields.nodes,
-				members: tt.fields.members,
-				RWMutex: tt.fields.RWMutex,
+			if got := len(h.nodes); got != tt.nodeswant {
+				t.Errorf("after set len(h.nodes) = %v, want %v", got, tt.nodeswant)
 			}
-			if got := h.Hash(tt.args.key); got != tt.want {
-				t.Errorf("hashJRing.Hash() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_hashJRing_Get(t *testing.T) {
-	type fields struct {
-		nodes   nodeList
-		members map[string]Node
-		RWMutex sync.RWMutex
-	}
-	type args struct {
-		key string
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   Node
-	}{
-	// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := &hashJRing{
-				nodes:   tt.fields.nodes,
-				members: tt.fields.members,
-				RWMutex: tt.fields.RWMutex,
-			}
-			if got := h.Get(tt.args.key); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hashJRing.Get() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_hashJRing_GetTwo(t *testing.T) {
-	type fields struct {
-		nodes   nodeList
-		members map[string]Node
-		RWMutex sync.RWMutex
-	}
-	type args struct {
-		key string
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   Node
-		want1  Node
-	}{
-	// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := &hashJRing{
-				nodes:   tt.fields.nodes,
-				members: tt.fields.members,
-				RWMutex: tt.fields.RWMutex,
-			}
-			got, got1 := h.GetTwo(tt.args.key)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hashJRing.GetTwo() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("hashJRing.GetTwo() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
-func Test_hashJRing_AllNodes(t *testing.T) {
-	type fields struct {
-		nodes   nodeList
-		members map[string]Node
-		RWMutex sync.RWMutex
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   []Node
-	}{
-	// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := &hashJRing{
-				nodes:   tt.fields.nodes,
-				members: tt.fields.members,
-				RWMutex: tt.fields.RWMutex,
-			}
-			if got := h.AllNodes(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hashJRing.AllNodes() = %v, want %v", got, tt.want)
+			if got := len(h.members); got != tt.memberswant {
+				t.Errorf("after set len(h.members) = %v, want %v", got, tt.memberswant)
 			}
 		})
 	}
@@ -576,12 +536,153 @@ func TestNewHashJRing(t *testing.T) {
 		name string
 		want JRing
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
+		{
+			name: "newHashJRing",
+			want: &hashJRing{
+				nodes:   nodeList{},
+				members: make(map[string]Node, 0),
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewHashJRing(); !reflect.DeepEqual(got, tt.want) {
+			if got := NewHashJRing(); !reflect.DeepEqual(got.AllNodes(), tt.want.AllNodes()) {
 				t.Errorf("NewHashJRing() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_hashJRing_Hash(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		addrs map[string]int
+		key   string
+	}{
+		// TODO: Add test cases.
+		{
+			name:  "Get Hash",
+			addrs: map[string]int{"test1": 3, "test2": 3, "test3": 1, "test4": 4},
+			key:   "keysone",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHashJRing()
+			h.Set(tt.addrs)
+			data := []byte(tt.key)
+
+			// Hash input data
+			hasher.Write(data)
+
+			// calculate hash
+			want := hasher.Sum64()
+
+			// reset hasher
+			hasher.Reset()
+			if got := h.Hash(tt.key); got != want {
+				t.Errorf("hashJRing.Hash() = %v, want %v", got, want)
+			}
+		})
+	}
+}
+
+func Test_hashJRing_AllNodes(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		addrs map[string]int
+		want  int
+	}{
+		// TODO: Add test cases.
+		{
+			name:  "Get AllNodes",
+			addrs: map[string]int{"test1": 3, "test2": 3, "test3": 1, "test4": 4},
+			want:  4,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHashJRing()
+			h.Set(tt.addrs)
+			if got := h.AllNodes(); len(got) != tt.want {
+				t.Errorf("hashJRing.AllNodes() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_hashJRing_Get(t *testing.T) {
+	tests := []struct {
+		name  string
+		addrs map[string]int
+		key   string
+		want  Node
+	}{
+		// TODO: Add test cases.
+		{
+			name:  "GetNode",
+			addrs: map[string]int{"test1": 3, "test2": 3, "test3": 1},
+			key:   "testkey",
+		},
+		{
+			name:  "GetNode nil",
+			addrs: map[string]int{},
+			key:   "testkey",
+			want:  nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHashJRing()
+			h.Set(tt.addrs)
+			got2 := h.Get(tt.key)
+			if got := h.Get(tt.key); !reflect.DeepEqual(got, got2) {
+				t.Errorf("hashJRing.Get() = %v, want %v", got, got2)
+			}
+		})
+	}
+}
+
+func Test_hashJRing_GetTwo(t *testing.T) {
+	tests := []struct {
+		name  string
+		addrs map[string]int
+		key   string
+	}{
+		// TODO: Add test cases.
+		{
+			name:  "Get2 threenodes",
+			addrs: map[string]int{"test1": 3, "test2": 3, "test3": 1},
+			key:   "dfsdfsfsd",
+		},
+		{
+			name:  "Get2 twonodes",
+			addrs: map[string]int{"test1": 1, "test3": 1},
+			key:   "dfsdfsfsd",
+		},
+		{
+			name:  "Get onenode",
+			addrs: map[string]int{"test1": 1},
+			key:   "dfsdfsfsd",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHashJRing()
+			h.Set(tt.addrs)
+			want := h.Get(tt.key)
+			got, got1 := h.GetTwo(tt.key)
+			if !reflect.DeepEqual(want, got) {
+				t.Errorf("hashJRing.GetTwo() got = %v, want %v", got, want)
+			}
+			if reflect.DeepEqual(want, got1) {
+				t.Errorf("hashJRing.GetTwo() got1 != %v, want %v", got1, want)
+			}
+			if got != nil && got1 != nil && got.GetAddr() == got1.GetAddr() {
+				t.Errorf("hashJRing.GetTwo() got = %v, got1 %v", got, got1)
 			}
 		})
 	}

@@ -155,25 +155,36 @@ func (h *hashJRing) Hash(key string) uint64 {
 
 func (h *hashJRing) Get(key string) Node {
 	ukey := h.Hash(key)
-	h.RLocker()
-	index := int(jump.Hash(ukey, len(h.nodes)))
+	h.RLock()
+	hlen := len(h.nodes)
+	if hlen == 0 {
+		return nil
+	}
+	index := int(jump.Hash(ukey, hlen))
 	nd := h.nodes[index]
 	h.RUnlock()
 	return nd
 }
 func (h *hashJRing) GetTwo(key string) (Node, Node) {
 	ukey := h.Hash(key)
-	h.RLocker()
+	h.RLock()
 	hlen := len(h.nodes)
+	nlen := len(h.members)
+	if hlen == 0 {
+		return nil, nil
+	}
 	start := int(jump.Hash(ukey, hlen))
 	nd := h.nodes[start]
 	var nd2 node
+	if nlen <= 1 {
+		return nd, nil
+	}
 	for i := start + 1; i != start; i++ {
 		if i >= hlen {
 			i = 0
 		}
 		nd2 = h.nodes[i]
-		if nd.Eq(nd2.addr) {
+		if !nd.Eq(nd2.addr) {
 			break
 		}
 	}
@@ -188,10 +199,13 @@ func (h *hashJRing) AllNodes() []Node {
 		out = append(out, n)
 	}
 	h.RUnlock()
-	return nil
+	return out
 }
 
 // NewHashJRing creates a new hash ring.
 func NewHashJRing() JRing {
-	return &hashJRing{nodes: make([]node, 0, 16)}
+	return &hashJRing{
+		nodes:   make([]node, 0, 16),
+		members: make(map[string]Node),
+	}
 }
