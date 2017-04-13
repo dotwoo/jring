@@ -453,10 +453,22 @@ func Test_hashJRing_Remove(t *testing.T) {
 			memberswant: 0,
 		},
 		{
-			name: "one remove",
+			name: "not match remove",
 			fields: fields{
 				nodes:   nodeList{node{addr: "test1", hash: 1, weight: 2}, node{addr: "test1", hash: 2, weight: 2}},
 				members: map[string]Node{"test1": node{addr: "test1", weight: 2}},
+			},
+			args: args{
+				addr: "test2",
+			},
+			nodeswant:   2,
+			memberswant: 1,
+		},
+		{
+			name: "two remove",
+			fields: fields{
+				nodes:   nodeList{node{addr: "test1", hash: 1, weight: 2}, node{addr: "test1", hash: 2, weight: 2}, node{addr: "test2", weight: 1}},
+				members: map[string]Node{"test1": node{addr: "test1", weight: 2}, "test2": node{addr: "test2", weight: 1}},
 			},
 			args: args{
 				addr: "test2",
@@ -668,6 +680,31 @@ func Test_hashJRing_GetTwo(t *testing.T) {
 			addrs: map[string]int{"test1": 1},
 			key:   "dfsdfsfsd",
 		},
+		{
+			name:  "Get zeronode",
+			addrs: map[string]int{},
+			key:   "dfsdfsfsd",
+		},
+		{
+			name:  "Get circle",
+			addrs: map[string]int{"test1": 1, "test2": 1, "test3": 1},
+			key:   "testkey",
+		},
+		{
+			name:  "Get circle2",
+			addrs: map[string]int{"test1": 1, "test2": 1, "test3": 1},
+			key:   "testkey2",
+		},
+		{
+			name:  "Get circle3",
+			addrs: map[string]int{"test1": 1, "test2": 1, "test3": 1},
+			key:   "testkey3",
+		},
+		{
+			name:  "Get circle4",
+			addrs: map[string]int{"test1": 1, "test2": 1, "test3": 1},
+			key:   "testkey4",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -678,7 +715,7 @@ func Test_hashJRing_GetTwo(t *testing.T) {
 			if !reflect.DeepEqual(want, got) {
 				t.Errorf("hashJRing.GetTwo() got = %v, want %v", got, want)
 			}
-			if reflect.DeepEqual(want, got1) {
+			if got1 != nil && reflect.DeepEqual(want, got1) {
 				t.Errorf("hashJRing.GetTwo() got1 != %v, want %v", got1, want)
 			}
 			if got != nil && got1 != nil && got.GetAddr() == got1.GetAddr() {
