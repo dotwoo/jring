@@ -240,7 +240,25 @@ func Test_nodeList_Less(t *testing.T) {
 		args args
 		want bool
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
+		{
+			name: "testNodeListLessTrue",
+			h: nodeList{
+				node{
+					addr: "node1",
+					hash: 1,
+				},
+				node{
+					addr: "node2",
+					hash: 2,
+				},
+			},
+			args: args{
+				i: 0,
+				j: 1,
+			},
+			want: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -257,29 +275,88 @@ func Test_nodeList_Swap(t *testing.T) {
 		j int
 	}
 	tests := []struct {
-		name string
-		h    nodeList
-		args args
+		name   string
+		h      nodeList
+		args   args
+		before bool
+		after  bool
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
+		{
+			name: "testNodeListSwap",
+			h: nodeList{
+				node{
+					addr: "node1",
+					hash: 1,
+				},
+				node{
+					addr: "node2",
+					hash: 2,
+				},
+			},
+			args: args{
+				i: 0,
+				j: 1,
+			},
+			before: true,
+			after:  false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.h.Less(tt.args.i, tt.args.j); got != tt.before {
+				t.Errorf("nodeList.Less() = %v, want %v", got, tt.before)
+			}
 			tt.h.Swap(tt.args.i, tt.args.j)
+			if got := tt.h.Less(tt.args.i, tt.args.j); got != tt.after {
+				t.Errorf("nodeList.Less() = %v, want %v", got, tt.after)
+			}
 		})
 	}
 }
 
 func Test_nodeList_sort(t *testing.T) {
+	type args struct {
+		i int
+		j int
+	}
 	tests := []struct {
-		name string
-		h    nodeList
+		name   string
+		h      nodeList
+		args   args
+		before bool
+		after  bool
 	}{
-	// TODO: Add test cases.
+		// TODO: Add test cases.
+		{
+			name: "testNodeListSwap",
+			h: nodeList{
+				node{
+					addr: "node2",
+					hash: 2,
+				},
+				node{
+					addr: "node1",
+					hash: 1,
+				},
+			},
+			args: args{
+				i: 0,
+				j: 1,
+			},
+			before: false,
+			after:  true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.h.Less(tt.args.i, tt.args.j); got != tt.before {
+				t.Errorf("nodeList.Less() = %v, want %v", got, tt.before)
+			}
 			tt.h.sort()
+			if got := tt.h.Less(tt.args.i, tt.args.j); got != tt.after {
+
+			}
 		})
 	}
 }
