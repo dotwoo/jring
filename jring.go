@@ -7,6 +7,8 @@ import (
 
 	"sync"
 
+	"errors"
+
 	jump "github.com/dgryski/go-jump"
 )
 
@@ -21,7 +23,7 @@ type Node interface {
 
 // JRing interface
 type JRing interface {
-	Add(addr string, weight int)
+	Add(addr string, weight int) error
 	Remove(addr string)
 	Set(map[string]int)
 	Get(key string) Node
@@ -81,15 +83,20 @@ func (h nodeList) sort() {
 	sort.Sort(h)
 }
 
-func (h *hashJRing) Add(addr string, weight int) {
-	h.RLock()
+func (h *hashJRing) Add(addr string, weight int) error {
+	h.Lock()
+	defer h.Unlock()
+	_, ok := h.members[addr]
+
+	if ok {
+		return errors.New("The node is exist")
+	}
 	hlen := len(h.nodes)
 	cap := hlen + weight
 
 	// resize node list
 	nodes := make(nodeList, cap)
 	copy(nodes, h.nodes)
-	h.RUnlock()
 
 	for i := hlen; i < cap; i++ {
 		// hash: 0:localhost:7000:0
@@ -109,22 +116,21 @@ func (h *hashJRing) Add(addr string, weight int) {
 		hasher.Reset()
 	}
 	nodes.sort()
-	h.Lock()
 	h.nodes = nodes
 	h.members[addr] = NewNode(addr, weight)
-	h.Unlock()
+	return nil
 }
 
 func (h *hashJRing) Remove(addr string) {
-	h.RLock()
+	h.Lock()
+	defer h.Unlock()
 	hlen := len(h.nodes)
 	_, ok := h.members[addr]
-	h.RUnlock()
 	if !ok {
 		return
 	}
+
 	nodes := make(nodeList, 0, hlen)
-	h.Lock()
 	delete(h.members, addr)
 	isremoved := false
 	for _, n := range h.nodes {
@@ -137,7 +143,6 @@ func (h *hashJRing) Remove(addr string) {
 	if isremoved {
 		h.nodes = nodes
 	}
-	h.Unlock()
 
 }
 
@@ -156,18 +161,19 @@ func (h *hashJRing) Hash(key string) uint64 {
 func (h *hashJRing) Get(key string) Node {
 	ukey := h.Hash(key)
 	h.RLock()
+	defer h.RUnlock()
 	hlen := len(h.nodes)
 	if hlen == 0 {
 		return nil
 	}
 	index := int(jump.Hash(ukey, hlen))
 	nd := h.nodes[index]
-	h.RUnlock()
 	return nd
 }
 func (h *hashJRing) GetTwo(key string) (Node, Node) {
 	ukey := h.Hash(key)
 	h.RLock()
+	defer h.RUnlock()
 	hlen := len(h.nodes)
 	nlen := len(h.members)
 	if hlen == 0 {
@@ -188,17 +194,16 @@ func (h *hashJRing) GetTwo(key string) (Node, Node) {
 			break
 		}
 	}
-	h.RUnlock()
 	return nd, nd2
 }
 
 func (h *hashJRing) AllNodes() []Node {
 	out := make([]Node, 0)
 	h.RLock()
+	defer h.RUnlock()
 	for _, n := range h.members {
 		out = append(out, n)
 	}
-	h.RUnlock()
 	return out
 }
 
