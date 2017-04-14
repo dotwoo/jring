@@ -161,13 +161,14 @@ func (h *hashJRing) Hash(key string) uint64 {
 func (h *hashJRing) Get(key string) Node {
 	ukey := h.Hash(key)
 	h.RLock()
-	defer h.RUnlock()
 	hlen := len(h.nodes)
 	if hlen == 0 {
+		h.RUnlock()
 		return nil
 	}
 	index := int(jump.Hash(ukey, hlen))
 	nd := h.nodes[index]
+	h.RUnlock()
 	return nd
 }
 func (h *hashJRing) GetTwo(key string) (Node, Node) {

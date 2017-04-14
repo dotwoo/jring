@@ -1,7 +1,9 @@
 package jring
 
 import (
+	"fmt"
 	"reflect"
+	"strconv"
 	"sync"
 	"testing"
 )
@@ -737,4 +739,40 @@ func Test_hashJRing_GetTwo(t *testing.T) {
 			}
 		})
 	}
+}
+
+// closure function for benchmarking multiple clusters
+func baselineBenchmark(hosts, vnodes int) func(b *testing.B) {
+	ring := NewHashJRing()
+	var startPort = 7000
+	for i := startPort; i < hosts+startPort; i++ {
+		ring.Add(fmt.Sprint("localhost:", i), vnodes)
+	}
+
+	return func(b *testing.B) {
+		// use the ring hash a number
+		for n := 0; n < b.N; n++ {
+			ring.Get(strconv.Itoa(n))
+		}
+	}
+}
+
+// 5 Nodes
+func Benchmark_5_NodeHashRing(b *testing.B) {
+	baselineBenchmark(5, 1)(b)
+}
+
+// 5 Nodes with 5 Virtual Nodes each
+func Benchmark_25_NodeHashRing(b *testing.B) {
+	baselineBenchmark(5, 5)(b)
+}
+
+// 5 Nodes with 20 Virtual Nodes each
+func Benchmark_100_NodeHashRing(b *testing.B) {
+	baselineBenchmark(5, 20)(b)
+}
+
+// 5 Nodes with 250 Virtual Nodes each
+func Benchmark_1000_NodeHashRing(b *testing.B) {
+	baselineBenchmark(5, 250)(b)
 }
