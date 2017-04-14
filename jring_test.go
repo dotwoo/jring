@@ -392,6 +392,20 @@ func Test_hashJRing_Add(t *testing.T) {
 			nodeswant:   2,
 			memberswant: 1,
 		},
+
+		{
+			name: "dub add",
+			fields: fields{
+				nodes:   nodeList{node{addr: "test1", hash: 1, weight: 2}, node{addr: "test1", hash: 2, weight: 2}},
+				members: map[string]Node{"test1": node{addr: "test1"}},
+			},
+			args: args{
+				addr:   "test1",
+				weight: 2,
+			},
+			nodeswant:   2,
+			memberswant: 1,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
